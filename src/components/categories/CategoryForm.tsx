@@ -13,18 +13,32 @@ interface FormErrors {
   slug?: string;
 }
 
+function toSlug(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
+}
+
 export default function CategoryForm({ initialValues, onSubmit, submitLabel = 'Save Category' }: Props) {
   const [values, setValues] = useState<Partial<CategoryInput>>({
     name: initialValues?.name ?? '',
     slug: initialValues?.slug ?? '',
   });
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(Boolean(initialValues?.slug));
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
-      const validated = await categorySchema.validate(values, { abortEarly: false });
+      const payload = {
+        ...values,
+        slug: (values.slug ?? '').trim() || toSlug(values.name ?? ''),
+      };
+      const validated = await categorySchema.validate(payload, { abortEarly: false });
       setErrors({});
       setSubmitting(true);
       await onSubmit(validated);
@@ -50,13 +64,25 @@ export default function CategoryForm({ initialValues, onSubmit, submitLabel = 'S
         <TextInput
           label="Name"
           value={values.name ?? ''}
-          onChange={(event) => setValues((prev) => ({ ...prev, name: event.currentTarget.value }))}
+          onChange={(event) => {
+            const nextValue = event.currentTarget.value;
+            setValues((prev) => ({
+              ...prev,
+              name: nextValue,
+              slug: slugManuallyEdited ? prev.slug : toSlug(nextValue),
+            }));
+          }}
           error={errors.name}
         />
         <TextInput
           label="Slug"
           value={values.slug ?? ''}
-          onChange={(event) => setValues((prev) => ({ ...prev, slug: event.currentTarget.value }))}
+          onChange={(event) => {
+            const nextValue = event.currentTarget.value;
+            setSlugManuallyEdited(true);
+            setValues((prev) => ({ ...prev, slug: nextValue }));
+          }}
+          description="Auto-generated from name; you can edit it if needed"
           error={errors.slug}
         />
         <Button type="submit" loading={submitting}>

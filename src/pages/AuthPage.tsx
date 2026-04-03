@@ -53,6 +53,23 @@ function extractAuthPayload(payload: unknown) {
   };
 }
 
+function extractUserPayload(payload: unknown): User | null {
+  if (!payload || typeof payload !== 'object') {
+    return null;
+  }
+
+  if ('id' in payload && 'name' in payload && 'email' in payload && 'role' in payload) {
+    return payload as User;
+  }
+
+  const data = (payload as { data?: unknown }).data;
+  if (data && typeof data === 'object' && 'id' in data && 'name' in data && 'email' in data && 'role' in data) {
+    return data as User;
+  }
+
+  return null;
+}
+
 export default function AuthPage() {
   const { user } = useStore(authStore);
   const navigate = useNavigate();
@@ -95,11 +112,17 @@ export default function AuthPage() {
       const response = await authApi.login(body);
       const payload = extractAuthPayload(response.data);
 
-      if (!payload.user || !payload.accessToken || !payload.refreshToken) {
+      if (!payload.accessToken || !payload.refreshToken) {
         throw new Error('Invalid auth response');
       }
 
-      setAuth(payload.user, payload.accessToken, payload.refreshToken);
+      const meResponse = await authApi.me();
+      const meUser = extractUserPayload(meResponse.data);
+      if (!meUser) {
+        throw new Error('Failed to resolve current user');
+      }
+
+      setAuth(meUser, payload.accessToken, payload.refreshToken);
       notifications.show({ color: 'green', title: 'Success', message: 'Logged in successfully' });
       navigate('/');
     } catch (err: unknown) {

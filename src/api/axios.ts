@@ -18,7 +18,13 @@ api.interceptors.response.use(
   (res) => res,
   async (error) => {
     const original = error.config;
-    if (error.response?.status === 401 && !original?._retry) {
+    const status = error.response?.status;
+    const code = (error.response?.data as { code?: string } | undefined)?.code;
+    const shouldTryRefresh =
+      !original?._retry &&
+      (status === 401 || (status === 400 && (code === '01001' || code === '01002')));
+
+    if (shouldTryRefresh && !String(original?.url ?? '').includes('/auth/refresh')) {
       original._retry = true;
       try {
         const { refreshToken } = authStore.get();
@@ -32,7 +38,9 @@ api.interceptors.response.use(
           { refresh_token: refreshToken }
         );
         setAccessToken(data.access_token);
-        original.headers.Authorization = `Bearer ${data.access_token}`;
+        if (original.headers) {
+          original.headers.Authorization = `Bearer ${data.access_token}`;
+        }
         return api(original);
       } catch {
         clearAuth();

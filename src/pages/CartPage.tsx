@@ -34,7 +34,6 @@ export default function CartPage() {
         items: cartItems.map((item) => ({
           product_id: item.product.id,
           quantity: item.quantity,
-          unit_price: item.product.price,
         })),
         note: note || undefined,
       };

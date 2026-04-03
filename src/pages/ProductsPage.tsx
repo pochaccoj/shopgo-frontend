@@ -18,6 +18,7 @@ import { addToCart } from '../stores/cartStore';
 import type { Category, Product } from '../types';
 
 interface ProductListResponse {
+  items?: Product[];
   data?: Product[];
   total?: number;
   totalPages?: number;
@@ -74,9 +75,17 @@ export default function ProductsPage() {
           setProducts(payload);
           setTotalPages(1);
         } else {
-          setProducts(payload.data ?? []);
-          const total = payload.totalPages ?? payload.total ?? 1;
-          setTotalPages(Math.max(1, total));
+          const items = payload.items ?? payload.data ?? [];
+          setProducts(items);
+
+          if (typeof payload.totalPages === 'number') {
+            setTotalPages(Math.max(1, payload.totalPages));
+          } else if (typeof payload.total === 'number') {
+            const limit = params.limit ?? 12;
+            setTotalPages(Math.max(1, Math.ceil(payload.total / limit)));
+          } else {
+            setTotalPages(1);
+          }
         }
       } catch (err: unknown) {
         const message =

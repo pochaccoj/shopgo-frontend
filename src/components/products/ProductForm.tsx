@@ -67,13 +67,19 @@ export default function ProductForm({ initialValues, categories, onSubmit, submi
         <TextInput
           label="Name"
           value={values.name ?? ''}
-          onChange={(event) => setValues((prev) => ({ ...prev, name: event.currentTarget.value }))}
+          onChange={(event) => {
+            const nextValue = event.currentTarget.value;
+            setValues((prev) => ({ ...prev, name: nextValue }));
+          }}
           error={errors.name}
         />
         <TextInput
           label="Description"
           value={values.description ?? ''}
-          onChange={(event) => setValues((prev) => ({ ...prev, description: event.currentTarget.value }))}
+          onChange={(event) => {
+            const nextValue = event.currentTarget.value;
+            setValues((prev) => ({ ...prev, description: nextValue }));
+          }}
           error={errors.description}
         />
         <NumberInput

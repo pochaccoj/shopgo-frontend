@@ -3,7 +3,6 @@ import {
   Card,
   Group,
   Modal,
-  Select,
   Stack,
   Table,
   Text,
@@ -39,7 +38,6 @@ export default function OrderDetailPage() {
   const { user } = useStore(authStore);
 
   const [order, setOrder] = useState<Order | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
 
@@ -66,16 +64,15 @@ export default function OrderDetailPage() {
       const resolved: Order | null = isOrder(extracted) ? extracted : null;
 
       setOrder(resolved);
-      if (resolved) {
-        setSelectedStatus(nextStatusMap[resolved.status]?.[0] ?? null);
-      }
     } catch (err: unknown) {
-      const responseStatus = (err as { response?: { status?: number; data?: { message?: string } } }).response?.status;
+      const response = (err as { response?: { status?: number; data?: { code?: string; message?: string } } }).response;
+      const responseStatus = response?.status;
+      const errorCode = response?.data?.code;
       const message =
         (err as { response?: { data?: { message?: string } } }).response?.data?.message ??
         'Failed to load order';
       notifications.show({ color: 'red', title: 'Error', message });
-      if (responseStatus === 403) {
+      if (responseStatus === 403 || errorCode === '06004') {
         navigate('/orders');
       }
     }
@@ -112,13 +109,14 @@ export default function OrderDetailPage() {
     }
   };
 
-  const handleUpdateStatus = async () => {
-    if (!id || !selectedStatus) {
+  const handleAdvanceStatus = async () => {
+    if (!id || nextStatuses.length === 0) {
       return;
     }
 
     try {
-      const body = await updateOrderStatusSchema.validate({ status: selectedStatus });
+      const nextStatus = nextStatuses[0];
+      const body = await updateOrderStatusSchema.validate({ status: nextStatus });
       setLoading(true);
       await ordersApi.updateStatus(id, body);
       notifications.show({ color: 'green', title: 'Success', message: 'Order status updated' });
@@ -149,26 +147,28 @@ export default function OrderDetailPage() {
         </Stack>
       </Card>
 
-      <Table withTableBorder>
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>Product</Table.Th>
-            <Table.Th>Quantity</Table.Th>
-            <Table.Th>Unit Price</Table.Th>
-            <Table.Th>Subtotal</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>
-          {(order.items ?? []).map((item) => (
-            <Table.Tr key={`${item.product_id}-${item.name ?? 'item'}`}>
-              <Table.Td>{item.name ?? item.product_id}</Table.Td>
-              <Table.Td>{item.quantity}</Table.Td>
-              <Table.Td>${item.unit_price.toFixed(2)}</Table.Td>
-              <Table.Td>${(item.quantity * item.unit_price).toFixed(2)}</Table.Td>
+      <Card withBorder shadow="xs" radius="md" p={0} bg="white">
+        <Table withTableBorder>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th>Product</Table.Th>
+              <Table.Th>Quantity</Table.Th>
+              <Table.Th>Unit Price</Table.Th>
+              <Table.Th>Subtotal</Table.Th>
             </Table.Tr>
-          ))}
-        </Table.Tbody>
-      </Table>
+          </Table.Thead>
+          <Table.Tbody>
+            {(order.items ?? []).map((item) => (
+              <Table.Tr key={`${item.product_id}-${item.name ?? 'item'}`}>
+                <Table.Td>{item.name ?? item.product_id}</Table.Td>
+                <Table.Td>{item.quantity}</Table.Td>
+                <Table.Td>${item.unit_price.toFixed(2)}</Table.Td>
+                <Table.Td>${(item.quantity * item.unit_price).toFixed(2)}</Table.Td>
+              </Table.Tr>
+            ))}
+          </Table.Tbody>
+        </Table>
+      </Card>
 
       {!isAdmin && order.status === 'pending' && (
         <Button color="red" variant="light" onClick={() => setCancelModalOpen(true)}>
@@ -177,20 +177,9 @@ export default function OrderDetailPage() {
       )}
 
       {isAdmin && nextStatuses.length > 0 && (
-        <Card withBorder>
-          <Stack>
-            <Select
-              label="Next status"
-              data={nextStatuses.map((value) => ({ value, label: value }))}
-              value={selectedStatus}
-              onChange={setSelectedStatus}
-              allowDeselect={false}
-            />
-            <Button onClick={handleUpdateStatus} loading={loading}>
-              Update Status
-            </Button>
-          </Stack>
-        </Card>
+        <Button onClick={handleAdvanceStatus} loading={loading}>
+          Advance to {nextStatuses[0]}
+        </Button>
       )}
 
       <Modal

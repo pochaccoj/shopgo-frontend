@@ -37,11 +37,30 @@ export default function AdminPage() {
 
   const [userQuery, setUserQuery] = useState('');
 
+  const extractList = <T,>(payload: unknown): T[] => {
+    if (Array.isArray(payload)) {
+      return payload as T[];
+    }
+
+    if (!payload || typeof payload !== 'object') {
+      return [];
+    }
+
+    const data = payload as { data?: unknown; items?: unknown };
+    if (Array.isArray(data.items)) {
+      return data.items as T[];
+    }
+    if (Array.isArray(data.data)) {
+      return data.data as T[];
+    }
+
+    return [];
+  };
+
   const loadCategories = async () => {
     try {
       const response = await categoriesApi.list();
-      const payload = response.data as { data?: Category[] } | Category[];
-      setCategories(Array.isArray(payload) ? payload : payload.data ?? []);
+      setCategories(extractList<Category>(response.data));
     } catch (err: unknown) {
       const message =
         (err as { response?: { data?: { message?: string } } }).response?.data?.message ??
@@ -53,8 +72,7 @@ export default function AdminPage() {
   const loadProducts = async () => {
     try {
       const response = await productsApi.list({ page: 1, limit: 100 });
-      const payload = response.data as { data?: Product[] } | Product[];
-      setProducts(Array.isArray(payload) ? payload : payload.data ?? []);
+      setProducts(extractList<Product>(response.data));
     } catch (err: unknown) {
       const message =
         (err as { response?: { data?: { message?: string } } }).response?.data?.message ??
@@ -66,8 +84,7 @@ export default function AdminPage() {
   const loadUsers = async (q?: string) => {
     try {
       const response = await usersApi.list(q);
-      const payload = response.data as { data?: User[] } | User[];
-      setUsers(Array.isArray(payload) ? payload : payload.data ?? []);
+      setUsers(extractList<User>(response.data));
     } catch (err: unknown) {
       const message =
         (err as { response?: { data?: { message?: string } } }).response?.data?.message ??

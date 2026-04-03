@@ -15,8 +15,12 @@ export default function OrdersPage() {
     const loadOrders = async () => {
       try {
         const response = await ordersApi.list(status ?? undefined);
-        const payload = response.data as { data?: Order[] } | Order[];
-        setOrders(Array.isArray(payload) ? payload : payload.data ?? []);
+        const payload = response.data as { data?: Order[]; items?: Order[] } | Order[];
+        if (Array.isArray(payload)) {
+          setOrders(payload);
+        } else {
+          setOrders(payload.items ?? payload.data ?? []);
+        }
       } catch (err: unknown) {
         const message =
           (err as { response?: { data?: { message?: string } } }).response?.data?.message ??

@@ -12,13 +12,13 @@ export default function ProductCard({ product, onAddToCart }: Props) {
     <Card withBorder shadow="sm" radius="md" p="lg">
       <Stack gap="sm">
         <Group justify="space-between" align="flex-start">
-          <Text fw={600} component={Link} to={`/products/${product.id}`} td="none">
+          <Text fw={600} component={Link} to={`/products/${product.id}`} td="none" lineClamp={2} style={{ maxWidth: '70%' }}>
             {product.name}
           </Text>
           {product.stock === 0 ? <Badge color="red">Out of stock</Badge> : <Badge color="green">In stock</Badge>}
         </Group>
 
-        <Text c="dimmed" lineClamp={2}>
+        <Text c="dimmed" lineClamp={2} style={{ minHeight: '3.2em' }}>
           {product.description ?? 'No description'}
         </Text>
 

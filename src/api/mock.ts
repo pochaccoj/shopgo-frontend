@@ -28,9 +28,8 @@ function fail(message: string, status = 400, code?: string): never {
 /* ─── seed data ───────────────────────────────────────────────────────────── */
 
 let catSeed = 5;
-let prodSeed = 7;
-let orderSeed = 4;
-let userSeed = 4;
+
+const newId = () => crypto.randomUUID();
 
 const _categories: Category[] = [
   { id: 1, name: 'Beverages', slug: 'beverages' },
@@ -41,7 +40,7 @@ const _categories: Category[] = [
 
 const _products: Product[] = [
   {
-    id: 'p-1',
+    id: '5e7b6b6b-7a57-47fd-9616-1498a6577a10',
     name: 'Cold Brew Coffee',
     description: 'Smooth, low-acid cold brew in a 350 ml ready-to-drink bottle.',
     price: 3.5,
@@ -50,7 +49,7 @@ const _products: Product[] = [
     created_at: '2026-03-10T08:00:00.000Z',
   },
   {
-    id: 'p-2',
+    id: 'ca6f4cd0-5adb-48d7-a53e-f95ece928007',
     name: 'Matcha Latte Sachet (10 pk)',
     description: 'Premium Japanese matcha blended with oat milk powder.',
     price: 12.9,
@@ -59,7 +58,7 @@ const _products: Product[] = [
     created_at: '2026-03-14T08:00:00.000Z',
   },
   {
-    id: 'p-3',
+    id: '34b4de4d-f616-498c-9664-6720ecfd8f45',
     name: 'Sea Salt Chips 80g',
     description: 'Thinly sliced kettle-cooked crisps with a light sea-salt finish.',
     price: 2.1,
@@ -68,7 +67,7 @@ const _products: Product[] = [
     created_at: '2026-03-16T08:00:00.000Z',
   },
   {
-    id: 'p-4',
+    id: '6169d295-cfd8-413a-a5f8-f7347ecf7ff8',
     name: 'Dark Chocolate 70%',
     description: 'Single-origin cacao bar, 70% cacao solids, 80 g.',
     price: 4.5,
@@ -77,7 +76,7 @@ const _products: Product[] = [
     created_at: '2026-03-18T08:00:00.000Z',
   },
   {
-    id: 'p-5',
+    id: 'e725fdb9-532c-4e67-a30e-876059f83c5a',
     name: 'Wireless Earbuds Pro',
     description: '6-hour playtime, IPX4 water resistance, aptX codec.',
     price: 49.9,
@@ -86,7 +85,7 @@ const _products: Product[] = [
     created_at: '2026-03-20T08:00:00.000Z',
   },
   {
-    id: 'p-6',
+    id: '2ec5d3a9-e349-431a-9fed-764ced56eafb',
     name: 'USB-C Fast Charger 65W',
     description: 'GaN chip, compact design, charges laptop + phone simultaneously.',
     price: 29.9,
@@ -95,7 +94,7 @@ const _products: Product[] = [
     created_at: '2026-03-22T08:00:00.000Z',
   },
   {
-    id: 'p-7',
+    id: 'f318326a-056d-44b2-b11d-bde706f30d57',
     name: 'Clean Code (Paperback)',
     description: "Robert C. Martin's guide to writing readable, maintainable code.",
     price: 18.0,
@@ -106,9 +105,14 @@ const _products: Product[] = [
 ];
 
 const _users: User[] = [
-  { id: 'u-1', name: 'Admin ShopGo', email: 'admin@shopgo.dev', role: 'admin' },
-  { id: 'u-2', name: 'Alice Customer', email: 'alice@shopgo.dev', role: 'customer' },
-  { id: 'u-3', name: 'Bob Customer', email: 'bob@shopgo.dev', role: 'customer' },
+  { id: 'f4f52935-8d4f-4f3b-b45b-df6f6fd75d6a', name: 'Admin ShopGo', email: 'admin@shopgo.dev', role: 'admin' },
+  {
+    id: '0b4575eb-7127-4728-a673-18caa8fb02c2',
+    name: 'Alice Customer',
+    email: 'alice@shopgo.dev',
+    role: 'customer',
+  },
+  { id: 'e3e6bcf3-0a6f-420d-b552-dde747cb6471', name: 'Bob Customer', email: 'bob@shopgo.dev', role: 'customer' },
 ];
 
 const _passwords: Record<string, string> = {
@@ -119,39 +123,74 @@ const _passwords: Record<string, string> = {
 
 const _orders: Order[] = [
   {
-    id: 'o-1',
-    user_id: 'u-2',
+    id: '80a14577-a6f0-4aa0-bf00-8d8fefecf9ca',
+    user_id: '0b4575eb-7127-4728-a673-18caa8fb02c2',
     status: 'pending',
     total_amount: 9.1,
     note: 'Leave at front door',
     items: [
-      { product_id: 'p-1', name: 'Cold Brew Coffee', quantity: 1, unit_price: 3.5 },
-      { product_id: 'p-3', name: 'Sea Salt Chips 80g', quantity: 2, unit_price: 2.1 },
-      { product_id: 'p-4', name: 'Dark Chocolate 70%', quantity: 0, unit_price: 4.5 },
+      {
+        product_id: '5e7b6b6b-7a57-47fd-9616-1498a6577a10',
+        name: 'Cold Brew Coffee',
+        quantity: 1,
+        unit_price: 3.5,
+      },
+      {
+        product_id: '34b4de4d-f616-498c-9664-6720ecfd8f45',
+        name: 'Sea Salt Chips 80g',
+        quantity: 2,
+        unit_price: 2.1,
+      },
+      {
+        product_id: '6169d295-cfd8-413a-a5f8-f7347ecf7ff8',
+        name: 'Dark Chocolate 70%',
+        quantity: 0,
+        unit_price: 4.5,
+      },
     ],
     created_at: '2026-04-01T09:00:00.000Z',
     updated_at: '2026-04-01T09:00:00.000Z',
   },
   {
-    id: 'o-2',
-    user_id: 'u-2',
+    id: '40fcb0d9-84d9-48bf-8a5e-5d89b44ebf6b',
+    user_id: '0b4575eb-7127-4728-a673-18caa8fb02c2',
     status: 'delivered',
     total_amount: 49.9,
     items: [
-      { product_id: 'p-5', name: 'Wireless Earbuds Pro', quantity: 1, unit_price: 49.9 },
+      {
+        product_id: 'e725fdb9-532c-4e67-a30e-876059f83c5a',
+        name: 'Wireless Earbuds Pro',
+        quantity: 1,
+        unit_price: 49.9,
+      },
     ],
     created_at: '2026-03-28T14:00:00.000Z',
     updated_at: '2026-03-30T10:00:00.000Z',
   },
   {
-    id: 'o-3',
-    user_id: 'u-3',
+    id: '6782f304-fa4b-43cc-aeba-d2cbef35eb7f',
+    user_id: 'e3e6bcf3-0a6f-420d-b552-dde747cb6471',
     status: 'confirmed',
     total_amount: 47.9,
     items: [
-      { product_id: 'p-6', name: 'USB-C Fast Charger 65W', quantity: 1, unit_price: 29.9 },
-      { product_id: 'p-2', name: 'Matcha Latte Sachet (10 pk)', quantity: 1, unit_price: 12.9 },
-      { product_id: 'p-3', name: 'Sea Salt Chips 80g', quantity: 2, unit_price: 2.55 },
+      {
+        product_id: '2ec5d3a9-e349-431a-9fed-764ced56eafb',
+        name: 'USB-C Fast Charger 65W',
+        quantity: 1,
+        unit_price: 29.9,
+      },
+      {
+        product_id: 'ca6f4cd0-5adb-48d7-a53e-f95ece928007',
+        name: 'Matcha Latte Sachet (10 pk)',
+        quantity: 1,
+        unit_price: 12.9,
+      },
+      {
+        product_id: '34b4de4d-f616-498c-9664-6720ecfd8f45',
+        name: 'Sea Salt Chips 80g',
+        quantity: 2,
+        unit_price: 2.55,
+      },
     ],
     created_at: '2026-03-31T18:00:00.000Z',
     updated_at: '2026-04-01T07:00:00.000Z',
@@ -176,7 +215,7 @@ export const mockAuthApi = {
       fail('Email already in use', 409);
     }
     const user: User = {
-      id: `u-${userSeed++}`,
+      id: newId(),
       name: body.name,
       email: body.email,
       role: 'customer',
@@ -282,7 +321,7 @@ export const mockProductsApi = {
     const cat = _categories.find((c) => c.id === body.category_id);
     if (!cat) fail('Category not found', 404);
     const product: Product = {
-      id: `p-${prodSeed++}`,
+      id: newId(),
       ...body,
       category: cat,
       created_at: new Date().toISOString(),
@@ -332,7 +371,7 @@ export const mockOrdersApi = {
     const total = items.reduce((s, i) => s + i.quantity * i.unit_price, 0);
     const now = new Date().toISOString();
     const order: Order = {
-      id: `o-${orderSeed++}`,
+      id: newId(),
       user_id: user.id,
       status: 'pending',
       total_amount: total,
