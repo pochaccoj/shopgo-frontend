@@ -58,6 +58,18 @@ function extractUserPayload(payload: unknown): User | null {
     return null;
   }
 
+  const directUser = (payload as { user?: unknown }).user;
+  if (
+    directUser &&
+    typeof directUser === 'object' &&
+    'id' in directUser &&
+    'name' in directUser &&
+    'email' in directUser &&
+    'role' in directUser
+  ) {
+    return directUser as User;
+  }
+
   if ('id' in payload && 'name' in payload && 'email' in payload && 'role' in payload) {
     return payload as User;
   }
@@ -65,6 +77,18 @@ function extractUserPayload(payload: unknown): User | null {
   const data = (payload as { data?: unknown }).data;
   if (data && typeof data === 'object' && 'id' in data && 'name' in data && 'email' in data && 'role' in data) {
     return data as User;
+  }
+
+  const nestedUser = (payload as { data?: { user?: unknown } }).data?.user;
+  if (
+    nestedUser &&
+    typeof nestedUser === 'object' &&
+    'id' in nestedUser &&
+    'name' in nestedUser &&
+    'email' in nestedUser &&
+    'role' in nestedUser
+  ) {
+    return nestedUser as User;
   }
 
   return null;

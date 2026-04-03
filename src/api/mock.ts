@@ -3,7 +3,7 @@
  * All data is in-memory; changes survive only within the same browser session.
  */
 
-import { authStore, clearAuth as _clearAuth, setAccessToken as _setAccessToken } from '../stores/authStore';
+import { authStore, clearAuth as _clearAuth, setAccessToken as _setAccessToken, setAuth as _setAuth } from '../stores/authStore';
 import type { Category, Order, OrderItem, OrderStatus, Product, Role, User } from '../types';
 import type { LoginInput, RegisterInput } from '../schemas/authSchema';
 import type { CategoryInput } from '../schemas/categorySchema';
@@ -222,7 +222,10 @@ export const mockAuthApi = {
     };
     _users.push(user);
     _passwords[user.email.toLowerCase()] = body.password;
-    return ok({ user, access_token: `mock-at-${user.id}`, refresh_token: `mock-rt-${user.id}` });
+    const accessToken = `mock-at-${user.id}`;
+    const refreshToken = `mock-rt-${user.id}`;
+    _setAuth(user, accessToken, refreshToken);
+    return ok({ user, access_token: accessToken, refresh_token: refreshToken });
   },
 
   login(body: LoginInput) {
@@ -230,7 +233,10 @@ export const mockAuthApi = {
     if (!user || _passwords[user.email.toLowerCase()] !== body.password) {
       fail('Invalid email or password', 401);
     }
-    return ok({ user, access_token: `mock-at-${user.id}`, refresh_token: `mock-rt-${user.id}` });
+    const accessToken = `mock-at-${user.id}`;
+    const refreshToken = `mock-rt-${user.id}`;
+    _setAuth(user, accessToken, refreshToken);
+    return ok({ access_token: accessToken, refresh_token: refreshToken });
   },
 
   refresh(refreshToken: string) {
